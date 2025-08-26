@@ -1,0 +1,25 @@
+# ===================================================================
+# .gitignore for including ONLY specific folders
+# ===================================================================
+
+# 1. Ignore everything in the project by default.
+*
+
+# 2. Now, create exceptions for the folders you want to keep.
+# The "!" character means "do NOT ignore".
+# We need to un-ignore both the directory and all of its contents recursively (/**).
+!/experiments/
+!/experiments/**
+!/utils/
+!/utils/**
+
+# 3. It's important to also un-ignore this .gitignore file itself!
+!.gitignore
+
+# 4. (Optional but Recommended) Re-ignore common files you don't want,
+# even if they are inside your included folders.
+.idea/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
