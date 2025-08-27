@@ -189,12 +189,12 @@ def run_finetune(quantize, epochs, train_batch_size, eval_batch_size, r, alpha, 
         learning_rate=2e-4,
         fp16=True,
         remove_unused_columns=False,
-        logging_steps=500,
+        logging_steps=100,
         logging_strategy="steps",
         eval_strategy="steps",
-        eval_steps=500,
+        eval_steps=100,
         save_strategy="steps",
-        save_steps=500,
+        save_steps=100,
     )
 
     collator = DataCollatorForSeq2Seq(
@@ -225,7 +225,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fine-tune Qwen2.5-VL with optional quantization")
     parser.add_argument("--quantize", default=None, choices=[None, "8-bit", "4-bit"],
                         help="Quantization level: '8-bit', '4-bit', or omit for no quantization.")
-    parser.add_argument("--epochs", type=int, default=3, help="Number of training epochs.")
+    parser.add_argument("--epochs", type=int, default=5, help="Number of training epochs.")
     parser.add_argument("--train_batch_size", type=int, default=1, help="Per-device training batch size.")
     parser.add_argument("--eval_batch_size", type=int, default=1, help="Per-device evaluation batch size.")
     parser.add_argument("--r", type=int, default=8, help="Parameter r in LoRA.")
