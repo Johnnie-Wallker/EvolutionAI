@@ -9,8 +9,8 @@ from tqdm import tqdm
 from PIL import Image
 from io import BytesIO
 from openai import OpenAI
-from transformers import (logging, Qwen2_5_VLForConditionalGeneration, AutoModelForCausalLM, AutoModel, AutoTokenizer,
-                          AutoProcessor, GenerationConfig, BitsAndBytesConfig)
+from transformers import (logging, Qwen2_5_VLForConditionalGeneration, AutoModelForCausalLM,
+                          AutoModelForImageTextToText, AutoProcessor, GenerationConfig, BitsAndBytesConfig)
 from qwen_vl_utils import process_vision_info
 from utils.KLC_util import get_confidence
 from utils.util import anls_score
@@ -53,11 +53,10 @@ def run_model(model_name: str, quantize: str, FT_root: str, size: int) -> None:
         model_type = 'qwen'
 
     elif model_name == "InternVL3-2B-Instruct":
-        model = AutoModel.from_pretrained(f"OpenGVLab/{model_name}", torch_dtype=torch.bfloat16, device_map="auto",
-                                          low_cpu_mem_usage=True, use_flash_attn=True, trust_remote_code=True,
-                                          quantization_config=bnb_config, local_files_only=True).eval()
-        tokenizer = AutoTokenizer.from_pretrained(f"OpenGVLab/{model_name}", trust_remote_code=True, use_fast=False,
-                                                  local_files_only=True)
+        model_checkpoint = "OpenGVLab/InternVL3-2B-hf"
+        processor = AutoProcessor.from_pretrained(model_checkpoint)
+        model = AutoModelForImageTextToText.from_pretrained(model_checkpoint, device_map="auto",
+                                                            torch_dtype=torch.bfloat16, local_files_only=True)
         model_type = "internvl"
 
     elif model_name == "Phi-4-multimodal-instruct":
@@ -197,6 +196,58 @@ def run_model(model_name: str, quantize: str, FT_root: str, size: int) -> None:
                             confidence = get_confidence(tok_strs, tok_probs)
                             break
 
+                        except json.JSONDecodeError as e:
+                            if attempt == max_retries - 1:
+                                result = template
+
+                if model_type == "internvl":
+                    messages = [{
+                        "role": "user",
+                        "content": [
+                            {"type": "image", "image": img},
+                            {"type": "text", "text": prompt}
+                        ]
+                    }]
+
+                    # Preparation for inference
+                    inputs = (processor.apply_chat_template(messages, add_generation_prompt=True, tokenize=True,
+                                                            return_dict=True, return_tensors="pt")
+                              .to(model.device, dtype=torch.bfloat16))
+
+                    # Run modal
+                    max_retries = 3
+                    for attempt in range(max_retries):
+                        gen = model.generate(**inputs, max_new_tokens=1024, output_scores=True,
+                                             return_dict_in_generate=True)
+
+                        # Decode just the generated tokens
+                        in_len = inputs["input_ids"].shape[1]
+                        gen_ids = gen.sequences[:, in_len:]
+                        raw = processor.batch_decode(gen_ids, skip_special_tokens=True)[0]
+                        # extract code‐blocked JSON if present
+                        m = re.search(r"```json\s*(\{.*?})\s*```", raw, re.S)
+                        json_str = m.group(1) if m else raw.strip()
+                        try:
+                            result = json.loads(json_str)
+                            if not isinstance(result, dict):
+                                if attempt == max_retries - 1:
+                                    result = json_template
+                                else:
+                                    continue
+                            # Decode token by token
+                            tok_ids = gen_ids[0].tolist()
+                            tok_strs = processor.tokenizer.convert_ids_to_tokens(tok_ids, skip_special_tokens=True)
+                            trans = str.maketrans({"Ġ": " ", "Ċ": "\n"})
+                            tok_strs = [t.translate(trans) for t in tok_strs]
+
+                            # Token logprobs
+                            transition_scores = model.compute_transition_scores(
+                                gen.sequences, gen.scores, normalize_logits=True
+                            )[0]
+                            logprobs = transition_scores.detach().cpu().tolist()
+                            tok_probs = [math.exp(logprob) for logprob in logprobs]
+                            confidence = get_confidence(tok_strs, tok_probs)
+                            break
                         except json.JSONDecodeError as e:
                             if attempt == max_retries - 1:
                                 result = template
@@ -397,7 +448,7 @@ def run_model(model_name: str, quantize: str, FT_root: str, size: int) -> None:
         precision_anls = total_TP_anls / (total_TP_anls + total_FP_anls) if total_TP_anls + total_FP_anls != 0 else 0
         recall_anls = total_TP_anls / (total_TP_anls + total_FN_anls) if total_TP_anls + total_FN_anls != 0 else 0
         f1_anls = 2 * precision_anls * recall_anls / (
-                    precision_anls + recall_anls) if precision_anls + recall_anls != 0 else 0
+                precision_anls + recall_anls) if precision_anls + recall_anls != 0 else 0
 
         pbar.set_postfix({
             "F1 Score(confidence)": f"{f1:.3f}",
@@ -417,7 +468,7 @@ if __name__ == "__main__":
                         help="Quantization level: '8-bit', '4-bit', or omit for no quantization.")
     parser.add_argument("--FT_root", default=None,
                         help="Directory where the trained LoRA module is stored.")
-    parser.add_argument("--size", type=int, default=None, help="Data size to run.")
+    parser.add_argument("--size", type=int, default=100, help="Data size to run, None for full data.")
 
     args = parser.parse_args()
     run_model(args.model_name, args.quantize, args.FT_root, args.size)
