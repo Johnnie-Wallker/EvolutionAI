@@ -55,8 +55,9 @@ def run_model(model_name: str, quantize: str, FT_root: str, size: int) -> None:
     elif model_name == "InternVL3-2B-Instruct":
         model_checkpoint = "OpenGVLab/InternVL3-2B-hf"
         processor = AutoProcessor.from_pretrained(model_checkpoint)
-        model = AutoModelForImageTextToText.from_pretrained(model_checkpoint, device_map="auto",
-                                                            torch_dtype=torch.bfloat16, local_files_only=True)
+        model = AutoModelForImageTextToText.from_pretrained(
+            model_checkpoint, device_map="auto",quantization_config=bnb_config,torch_dtype=torch.bfloat16,
+            local_files_only=True)
         model_type = "internvl"
 
     elif model_name == "Phi-4-multimodal-instruct":
@@ -64,7 +65,7 @@ def run_model(model_name: str, quantize: str, FT_root: str, size: int) -> None:
                                                   local_files_only=True)
         model = AutoModelForCausalLM.from_pretrained(f"microsoft/{model_name}", device_map="auto", torch_dtype="auto",
                                                      trust_remote_code=True, _attn_implementation="flash_attention_2",
-                                                     local_files_only=True, quantization_config=bnb_config)
+                                                     local_files_only=True)
         generation_config = GenerationConfig.from_pretrained(f"microsoft/{model_name}", local_files_only=True)
         model_type = "phi"
 
