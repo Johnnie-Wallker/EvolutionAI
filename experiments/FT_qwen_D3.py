@@ -232,7 +232,7 @@ if __name__ == "__main__":
     parser.add_argument("--alpha", type=int, default=16, help="Parameter alpha in LoRA.")
     parser.add_argument("--output_dir", default="qwen_lora_ft", help="Directory to save the trained model.")
     parser.add_argument("--train_size", default="full", help="Number of training samples.")
-    parser.add_argument("--eval_size", default=50, help="Number of evaluation samples.")
+    parser.add_argument("--eval_size", default=100, help="Number of evaluation samples.")
 
     args = parser.parse_args()
 
