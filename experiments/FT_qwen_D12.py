@@ -267,7 +267,7 @@ def run_finetune(quantize, epochs, train_batch_size, eval_batch_size, r, alpha, 
     )
 
     # Train
-    trainer.train()
+    trainer.train(resume_from_checkpoint=True)
 
 
 if __name__ == "__main__":
