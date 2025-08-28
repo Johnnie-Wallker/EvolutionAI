@@ -12,6 +12,7 @@
 !/experiments/**
 !/utils/
 !/utils/**
+!requirements.txt
 
 # 3. It's important to also un-ignore this .gitignore file itself!
 !.gitignore

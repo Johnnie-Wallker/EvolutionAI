@@ -5,6 +5,7 @@ from datasets import Dataset
 from collections import Counter
 from transformers import (Qwen2_5_VLForConditionalGeneration, AutoProcessor, Seq2SeqTrainer,
                           Seq2SeqTrainingArguments, DataCollatorForSeq2Seq, BitsAndBytesConfig)
+from transformers.trainer_utils import get_last_checkpoint
 from peft import LoraConfig, get_peft_model
 from qwen_vl_utils import process_vision_info
 from utils.util import anls_score
@@ -225,7 +226,13 @@ def run_finetune(quantize, epochs, train_batch_size, eval_batch_size, r, alpha, 
     )
 
     # Train
-    trainer.train(resume_from_checkpoint=True)
+    last_checkpoint = get_last_checkpoint(training_args.output_dir)
+    if last_checkpoint:
+        print(f"Checkpoint found at {last_checkpoint}. Resuming training.")
+        trainer.train(resume_from_checkpoint=last_checkpoint)
+    else:
+        print("No checkpoint found. Starting training from scratch.")
+        trainer.train()
 
 
 if __name__ == "__main__":

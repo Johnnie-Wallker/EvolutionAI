@@ -56,7 +56,7 @@ def run_model(model_name: str, quantize: str, FT_root: str, size: int) -> None:
         model_checkpoint = "OpenGVLab/InternVL3-2B-hf"
         processor = AutoProcessor.from_pretrained(model_checkpoint)
         model = AutoModelForImageTextToText.from_pretrained(
-            model_checkpoint, device_map="auto",quantization_config=bnb_config,torch_dtype=torch.bfloat16,
+            model_checkpoint, device_map="auto", quantization_config=bnb_config, torch_dtype=torch.bfloat16,
             local_files_only=True)
         model_type = "internvl"
 
@@ -133,7 +133,8 @@ def run_model(model_name: str, quantize: str, FT_root: str, size: int) -> None:
                       f"in British Pounds of the charitable organization\nNote that the information may or may not be "
                       f"on this page, if there is no such information, just return '' for that field(s). Return *only* "
                       f"valid JSON matching this template exactly, do not make changes to the JSON structure, your "
-                      f"output JSON should be exactly the template but with values filled:\n{json_template}")
+                      f"output JSON should be exactly the template but with values filled(values should be strings only)"
+                      f":\n{json_template}")
 
             agg = {f: [] for f in fields.keys()}
             doc = fitz.open(pdf_path)
@@ -181,6 +182,13 @@ def run_model(model_name: str, quantize: str, FT_root: str, size: int) -> None:
                                     result = template
                                 else:
                                     continue
+                            else:
+                                for key, value in result.items():
+                                    if isinstance(value, (dict, list)):
+                                        if attempt == max_retries - 1:
+                                            result = template
+                                        else:
+                                            continue
 
                             # Decode token by token
                             tok_ids = gen_ids[0].tolist()
@@ -232,9 +240,17 @@ def run_model(model_name: str, quantize: str, FT_root: str, size: int) -> None:
                             result = json.loads(json_str)
                             if not isinstance(result, dict):
                                 if attempt == max_retries - 1:
-                                    result = json_template
+                                    result = template
                                 else:
                                     continue
+                            else:
+                                for key, value in result.items():
+                                    if isinstance(value, (dict, list)):
+                                        if attempt == max_retries - 1:
+                                            result = template
+                                        else:
+                                            continue
+
                             # Decode token by token
                             tok_ids = gen_ids[0].tolist()
                             tok_strs = processor.tokenizer.convert_ids_to_tokens(tok_ids, skip_special_tokens=True)
@@ -279,6 +295,13 @@ def run_model(model_name: str, quantize: str, FT_root: str, size: int) -> None:
                                     result = template
                                 else:
                                     continue
+                            else:
+                                for key, value in result.items():
+                                    if isinstance(value, (dict, list)):
+                                        if attempt == max_retries - 1:
+                                            result = template
+                                        else:
+                                            continue
 
                             tokens = response.choices[0].logprobs.content
                             tok_strs = [bytes(t.bytes).decode("utf-8") for t in tokens]
@@ -313,6 +336,13 @@ def run_model(model_name: str, quantize: str, FT_root: str, size: int) -> None:
                                     result = template
                                 else:
                                     continue
+                            else:
+                                for key, value in result.items():
+                                    if isinstance(value, (dict, list)):
+                                        if attempt == max_retries - 1:
+                                            result = template
+                                        else:
+                                            continue
 
                             # Decode token by token
                             tok_ids = gen_ids[0].tolist()
@@ -379,7 +409,10 @@ def run_model(model_name: str, quantize: str, FT_root: str, size: int) -> None:
                     if not cleaned:
                         normalized[k] = v
                     else:
-                        num = float(cleaned)
+                        try:
+                            num = float(cleaned)
+                        except ValueError:
+                            num = 0
                         normalized[k] = f"{num:.2f}"
                 else:
                     normalized[k] = v
@@ -397,7 +430,10 @@ def run_model(model_name: str, quantize: str, FT_root: str, size: int) -> None:
                     if not cleaned:
                         normalized_anls[k] = v
                     else:
-                        num = float(cleaned)
+                        try:
+                            num = float(cleaned)
+                        except ValueError:
+                            num = 0
                         normalized_anls[k] = f"{num:.2f}"
                 else:
                     normalized_anls[k] = v
