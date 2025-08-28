@@ -5,7 +5,7 @@ This repository is the official codebase for the UCL project in collaboration wi
 
 The primary goal is to evaluate and enhance the capabilities of models like **Qwen-VL**, **InternVL**, **Phi-4**, and **GPT-4o** on tasks such as information extraction from receipts, documents, and forms.
 
-## 📋 Table of Contents
+## Table of Contents
 - [Project Overview](#project-overview)
 - [Setup and Installation](#setup-and-installation)
 - [Running Inference](#running-inference)
@@ -13,7 +13,7 @@ The primary goal is to evaluate and enhance the capabilities of models like **Qw
 - [Available Experiments](#available-experiments)
 - [Utility Scripts](#utility-scripts)
 
-## 🚀 Project Overview
+## Project Overview
 
 This project provides a framework to:
 -   **Run Inference**: Evaluate pre-trained VLMs on several benchmark datasets for document information extraction.
@@ -33,7 +33,7 @@ This project provides a framework to:
 -   **KLC (kleister-charity)**: Extraction from UK charity annual reports.
 -   **Custom Datasets**: Scripts for three different custom datasets (`dataset1`, `dataset2`, `dataset3`) are also included.
 
-## ⚙️ Setup and Installation
+## Setup and Installation
 
 1.  **Clone the repository:**
     ```bash
@@ -71,7 +71,7 @@ This project provides a framework to:
 
     For the models, please note that the scripts are configured with `local_files_only=True` by default when loading models from Hugging Face. This means you must download the model weights and files beforehand. You can do this by running a script that downloads and caches them once.
 
-## ⚡ Running Inference
+## Running Inference
 
 All inference scripts share a similar command-line interface. You need to specify the model you want to run and, optionally, the level of quantization.
 
@@ -99,7 +99,7 @@ python experiments/DocVQA.py --model_name "InternVL3-2B-Instruct" --quantize "4-
 ### Output Location
 The results for each run, including detailed JSON outputs and final scores, are saved in the `results/` directory. The output path is structured as follows: `results/<Dataset_Name>/<Quantization>/<Model_Name>/`.
 
-## 🔥 Fine-Tuning Models
+## Fine-Tuning Models
 
 This project includes scripts for fine-tuning the `Qwen2.5-VL-3B-Instruct` model using LoRA on various datasets.
 
@@ -140,7 +140,7 @@ python experiments/FT_qwen_D12.py \
 -   `--output_dir`: Directory to save the trained LoRA adapter.
 -   `--train_size`, `--eval_size`: (Optional) Number of samples to use for training/evaluation.
 
-## 📂 Available Experiments
+## Available Experiments
 
 -   `CORD.py`: Inference on the CORD dataset.
 -   `DocVQA.py`: Inference on the DocVQA dataset.
@@ -151,7 +151,7 @@ python experiments/FT_qwen_D12.py \
 -   `FT_qwen_D1.py`, `FT_qwen_D2.py`, `FT_qwen_D3.py`: Fine-tuning on individual custom datasets.
 -   `FT_qwen_D12.py`, `FT_qwen_D123.py`: Fine-tuning on combined custom datasets.
 
-## 🛠️ Utility Scripts
+## Utility Scripts
 
 The `utils/` directory contains helper functions used across the experiments:
 -   `CORD_util.py`: Evaluation logic (Tree Edit Distance) for the CORD dataset.
