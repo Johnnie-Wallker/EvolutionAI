@@ -77,17 +77,17 @@ All inference scripts share a similar command-line interface. You need to specif
 
 **General Command Structure:**
 ```bash
-python experiments/<script_name>.py --model_name <model_name> [--quantize <quantization>]
+python -m experiments.<script_name> --model_name <model_name> [--quantize <quantization>]
 ```
 
 **Example: Running the CORD experiment with Qwen-VL**
 ```bash
-python experiments/CORD.py --model_name "Qwen2.5-VL-3B-Instruct"
+python -m experiments.CORD --model_name "Qwen2.5-VL-3B-Instruct"
 ```
 
 **Example: Running the DocVQA experiment with 4-bit quantization**
 ```bash
-python experiments/DocVQA.py --model_name "InternVL3-2B-Instruct" --quantize "4-bit"
+python -m experiments.DocVQA --model_name "InternVL3-2B-Instruct" --quantize "4-bit"
 ```
 
 ### Command-Line Arguments for Inference
@@ -105,24 +105,24 @@ This project includes scripts for fine-tuning the `Qwen2.5-VL-3B-Instruct` model
 
 **General Command Structure:**
 ```bash
-python experiments/<finetune_script_name>.py [arguments]
+python -m experiments.<finetune_script_name> [arguments]
 ```
 
 **Example: Fine-tuning on the CORD dataset**
 ```bash
-python experiments/FT_qwen.py \
+python -m experiments.FT_qwen_D1 \
     --quantize "4-bit" \
     --epochs 3 \
     --train_batch_size 2 \
     --eval_batch_size 2 \
     --r 8 \
     --alpha 16 \
-    --output_dir "qwen_lora_cord"
+    --output_dir "qwen_lora_d1"
 ```
 
 **Example: Fine-tuning on a combination of custom datasets (D1 and D2)**
 ```bash
-python experiments/FT_qwen_D12.py \
+python -m experiments.FT_qwen_D12 \
     --quantize "4-bit" \
     --epochs 3 \
     --train_size 1000 \
