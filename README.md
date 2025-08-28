@@ -10,7 +10,7 @@ The primary goal is to evaluate and enhance the capabilities of models like **Qw
 - [Setup and Installation](#setup-and-installation)
 - [Running Inference](#running-inference)
 - [Fine-Tuning Models](#fine-tuning-models)
-- [Available Experiments](#available-experiments)
+- [Experiments](#experiments)
 - [Utility Scripts](#utility-scripts)
 
 ## Project Overview
@@ -140,14 +140,13 @@ python -m experiments.FT_qwen_D12 \
 -   `--output_dir`: Directory to save the trained LoRA adapter.
 -   `--train_size`, `--eval_size`: (Optional) Number of samples to use for training/evaluation.
 
-## Available Experiments
+## Experiments
 
 -   `CORD.py`: Inference on the CORD dataset.
 -   `DocVQA.py`: Inference on the DocVQA dataset.
 -   `SROIE.py`: Inference on the SROIE dataset.
 -   `KLC.py`: Inference on the Kleister-Charity dataset.
 -   `dataset1.py`, `dataset2.py`, `dataset3.py`: Inference on custom datasets.
--   `FT_qwen.py`: Fine-tuning on CORD.
 -   `FT_qwen_D1.py`, `FT_qwen_D2.py`, `FT_qwen_D3.py`: Fine-tuning on individual custom datasets.
 -   `FT_qwen_D12.py`, `FT_qwen_D123.py`: Fine-tuning on combined custom datasets.
 
